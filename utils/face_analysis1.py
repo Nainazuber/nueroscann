@@ -1,10 +1,11 @@
 import cv2
-import mediapipe as mp
 import numpy as np
 import random
 from collections import Counter
+import mediapipe as mp
+from mediapipe.tasks import python
+from mediapipe.tasks.python.vision import FaceMesh
 
-mp_face_mesh = mp.solutions.face_mesh
 
 LEFT_EYE = [33, 160, 158, 133, 153, 144]
 RIGHT_EYE = [362, 385, 387, 263, 373, 380]
