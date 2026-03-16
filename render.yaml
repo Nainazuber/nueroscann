@@ -1,15 +1,10 @@
 services:
   - type: web
     name: neuroscan
-    env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    env: docker
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
-        value: 3.9.0
-buildCommand: |
-  apt-get update && apt-get install -y cmake build-essential
-  pip install --upgrade pip
-  pip install -r requirements.txt
+        value: 3.10.0
