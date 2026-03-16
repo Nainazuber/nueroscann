@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - NeuroFace Analyzer{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 500px; text-align: center;">
+        <div style="font-size: 6rem; color: var(--primary-300); margin-bottom: 2rem;">
+            <i class="fas fa-map-signs"></i>
+        </div>
+        
+        <h1 style="color: var(--primary-700); margin-bottom: 1rem;">404</h1>
+        <h2 style="color: var(--text-secondary); margin-bottom: 1.5rem;">Page Not Found</h2>
+        
+        <p style="color: var(--text-tertiary); margin-bottom: 2rem;">
+            The page you're looking for doesn't exist or has been moved.
+        </p>
+        
+        <div class="action-buttons" style="justify-content: center;">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <button onclick="history.back()" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Go Back
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

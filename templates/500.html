@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - NeuroFace Analyzer{% endblock %}
+
+{% block content %}
+<div class="container" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 500px; text-align: center;">
+        <div style="font-size: 6rem; color: var(--accent-danger); margin-bottom: 2rem;">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        
+        <h1 style="color: var(--accent-danger); margin-bottom: 1rem;">500</h1>
+        <h2 style="color: var(--text-secondary); margin-bottom: 1.5rem;">Internal Server Error</h2>
+        
+        <p style="color: var(--text-tertiary); margin-bottom: 2rem;">
+            Something went wrong on our end. Our team has been notified and is working to fix the issue.
+        </p>
+        
+        <div class="action-buttons" style="justify-content: center;">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <i class="fas fa-home"></i> Go Home
+            </a>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                <i class="fas fa-redo"></i> Try Again
+            </a>
+            <a href="mailto:support@neuroface.com" class="btn btn-outline">
+                <i class="fas fa-envelope"></i> Contact Support
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

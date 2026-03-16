@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - NeuroFace Analyzer{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <h1 class="welcome-message">Welcome back, {{ current_user.username }}!</h1>
+    <p class="user-info">Member since {{ current_user.created_at.strftime('%B %Y') }}</p>
+</div>
+
+<div class="action-buttons">
+    <a href="{{ url_for('start_test') }}" class="btn btn-primary">
+        <i class="fas fa-play-circle"></i> Start New Test
+    </a>
+    <a href="{{ url_for('profile') }}" class="btn btn-secondary">
+        <i class="fas fa-user-cog"></i> My Profile
+    </a>
+</div>
+
+<div class="dashboard-grid">
+    <div class="card">
+        <h3><i class="fas fa-chart-line"></i> Test Statistics</h3>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Total Tests</div>
+                <div class="stat-value">{{ total_tests }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Avg Blink Rate</div>
+                <div class="stat-value">{{ "%.1f"|format(avg_blink_rate) if avg_blink_rate > 0 else "0.0" }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3><i class="fas fa-info-circle"></i> Quick Instructions</h3>
+        <div class="instruction-panel">
+            <ul>
+                <li>Sit in a well-lit room facing the camera</li>
+                <li>Remove glasses if possible</li>
+                <li>Stay still during the 60-second test</li>
+                <li>Keep a neutral expression at the start</li>
+                <li>Blink naturally during the test</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<div class="test-history">
+    <h2>Recent Tests</h2>
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Blink Count</th>
+                <th>Blink Rate</th>
+                <th>Conditions Detected</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- In the Recent Results section -->
+            {% for result in results %}
+            <tr>
+                <td>{{ result.test_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ result.blink_count }}</td>
+                <td>{{ "%.1f"|format(result.blink_rate) }} /min</td>
+                <td>
+                    {% set conditions = result.conditions|fromjson %}
+                    {% if conditions and conditions[0] != 'No specific condition detected' %}
+                        <span class="badge bg-danger">{{ conditions[0] }}</span>
+                    {% else %}
+                        <span class="badge bg-success">Normal</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('results', result_id=result.id) }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem; color: var(--primary-300); margin-bottom: 1rem;">
+        <i class="fas fa-eye"></i>
+    </div>
+    <h3>No tests completed yet</h3>
+    <p>Start your first analysis to see your results here</p>
+    <a href="{{ url_for('start_test') }}" class="btn btn-primary" style="margin-top: 1rem;">
+        <i class="fas fa-play"></i> Start First Test
+    </a>
+</div>
+{% endif %}
+
+<div class="dashboard-grid" style="margin-top: 2rem;">
+    <div class="card">
+        <h3><i class="fas fa-heartbeat"></i> Health Insights</h3>
+        <p>Regular analysis can help detect early signs of:</p>
+        <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>Dry Eye Syndrome</li>
+            <li>Stress and Anxiety</li>
+            <li>Neurological conditions</li>
+            <li>Sleep disorders</li>
+        </ul>
+    </div>
+    
+    <div class="card">
+        <h3><i class="fas fa-file-pdf"></i> Report Features</h3>
+        <p>Each test generates a comprehensive PDF report with:</p>
+        <ul style="margin-top: 1rem; padding-left: 1.5rem;">
+            <li>Detailed blink analysis</li>
+            <li>Expression breakdown</li>
+            <li>Health recommendations</li>
+            <li>Professional formatting</li>
+        </ul>
+    </div>
+</div>
+
+<style>
+.dashboard-header {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+}
+
+.welcome-message {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.user-info {
+    opacity: 0.9;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.stat-card {
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--primary-600);
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.instruction-panel {
+    background: var(--primary-50);
+    border-left: 4px solid var(--primary-500);
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0 8px 8px 0;
+}
+
+.instruction-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.instruction-panel li {
+    margin-bottom: 0.5rem;
+    padding-left: 1.5rem;
+    position: relative;
+}
+
+.instruction-panel li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--primary-600);
+    font-weight: bold;
+}
+
+.test-history {
+    margin-top: 2rem;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.history-table th,
+.history-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.history-table th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.history-table tr:hover {
+    background: var(--bg-secondary);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0.1rem;
+}
+
+.status-normal {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+</style>
+{% endblock %}

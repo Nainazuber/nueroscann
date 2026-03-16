@@ -1,0 +1,425 @@
+{% extends "base.html" %}
+
+{% block title %}Health Analysis Test - NeuroFace Analyzer{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 style="text-align: center; color: var(--primary-color); margin-bottom: 1rem;">
+        <i class="fas fa-stethoscope"></i> Comprehensive Health Analysis Test
+    </h1>
+    <p style="text-align: center; color: var(--gray-color); margin-bottom: 2rem;">
+        60-second analysis for 8+ potential health conditions through facial biomarkers
+    </p>
+    
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3><i class="fas fa-heartbeat"></i> Detectable Conditions</h3>
+            <div class="conditions-list">
+                <div class="condition-item">
+                    <i class="fas fa-eye" style="color: #4a6fa5;"></i>
+                    <span>Dry Eye Syndrome</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-brain" style="color: #ff6b6b;"></i>
+                    <span>Stress & Anxiety</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-brain" style="color: #4fc3a1;"></i>
+                    <span>Parkinson's Indicators</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-user-injured" style="color: #ffd166;"></i>
+                    <span>Bell's Palsy/Stroke</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-sad-tear" style="color: #3b82f6;"></i>
+                    <span>Depression Indicators</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-tachometer-alt" style="color: #ef4444;"></i>
+                    <span>Hyperthyroidism</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-procedures" style="color: #8b5cf6;"></i>
+                    <span>Myasthenia Gravis</span>
+                </div>
+                <div class="condition-item">
+                    <i class="fas fa-wheelchair" style="color: #10b981;"></i>
+                    <span>ALS Indicators</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="instruction-panel">
+                <h3><i class="fas fa-list-ol"></i> Test Instructions</h3>
+                <ol>
+                    <li>Ensure good lighting - face the light source</li>
+                    <li>Position face in center - keep steady</li>
+                    <li>Remove glasses if possible</li>
+                    <li>Stay still during 60-second test</li>
+                    <li>Blink naturally - don't force blinks</li>
+                    <li>Show neutral expression initially</li>
+                    <li>Relax facial muscles</li>
+                    <li>Breathe normally throughout</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <input type="hidden" id="session-id" value="{{ session_id }}">
+    
+    <div id="test-status" class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Ready to start comprehensive health analysis
+    </div>
+    
+    <div id="countdown" class="countdown" style="display: none;"></div>
+    
+    <div id="video-container" class="video-container">
+        <video id="video-feed" autoplay playsinline></video>
+        <canvas id="overlay-canvas" class="overlay-canvas"></canvas>
+    </div>
+    
+    <div class="controls-panel">
+        <div class="form-check">
+            <input type="checkbox" id="show-mesh" class="form-check-input" checked>
+            <label for="show-mesh" class="form-check-label">
+                <i class="fas fa-draw-polygon"></i> Show Facial Mesh
+            </label>
+        </div>
+        <div class="form-check">
+            <input type="checkbox" id="show-diagnostics" class="form-check-input" checked>
+            <label for="show-diagnostics" class="form-check-label">
+                <i class="fas fa-chart-medical"></i> Show Health Metrics
+            </label>
+        </div>
+        <button id="toggle-guide" class="btn btn-sm btn-secondary">
+            <i class="fas fa-question-circle"></i> Show Guide
+        </button>
+    </div>
+    
+    <div id="test-controls" class="test-controls">
+        <button onclick="startTest()" class="btn btn-primary btn-lg">
+            <i class="fas fa-play"></i> Start Health Analysis
+        </button>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+    
+    <div id="live-diagnostics" style="display: none;">
+        <div class="dashboard-grid">
+            <div class="card">
+                <h4><i class="fas fa-eye"></i> Blink Analysis</h4>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">Blink Count</div>
+                        <div id="blink-count" class="stat-value">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Blink Rate</div>
+                        <div id="blink-rate" class="stat-value">0.0/min</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">EAR</div>
+                        <div id="ear-value" class="stat-value">0.30</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h4><i class="fas fa-smile"></i> Expression Analysis</h4>
+                <div id="expression-meter">
+
+                    <div class="expression-bar">
+                        <span>Neutral</span>
+                        <div class="progress">
+                            <div id="neutral-bar" class="progress-bar" style="width: 0%; background: #6c757d;"></div>
+                        </div>
+                        <span id="neutral-value">0%</span>
+                    </div>
+
+                    <div class="expression-bar">
+                        <span>Happy</span>
+                        <div class="progress">
+                            <div id="happy-bar" class="progress-bar" style="width: 0%; background: #4fc3a1;"></div>
+                        </div>
+                        <span id="happy-value">0%</span>
+                    </div>
+
+                    <div class="expression-bar">
+                        <span>Sad</span>
+                        <div class="progress">
+                            <div id="sad-bar" class="progress-bar" style="width: 0%; background: #3b82f6;"></div>
+                        </div>
+                        <span id="sad-value">0%</span>
+                    </div>
+
+                    <div class="expression-bar">
+                        <span>Angry</span>
+                        <div class="progress">
+                            <div id="angry-bar" class="progress-bar" style="width: 0%; background: #ef4444;"></div>
+                        </div>
+                        <span id="angry-value">0%</span>
+                    </div>
+
+                    <div class="expression-bar">
+                        <span>Surprise</span>
+                        <div class="progress">
+                            <div id="surprise-bar" class="progress-bar" style="width: 0%; background: #f59e0b;"></div>
+                        </div>
+                        <span id="surprise-value">0%</span>
+                    </div>
+
+                </div>
+            </div>
+
+        
+        <div class="card">
+            <h4><i class="fas fa-heartbeat"></i> Health Indicators</h4>
+            <div id="health-indicators" class="indicators-grid">
+                <!-- Health indicators will be populated here -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="progress-container" style="margin: 2rem 0;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span>Analysis Progress</span>
+            <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+            <div id="progress-bar" class="progress-fill" style="width: 0%;"></div>
+        </div>
+    </div>
+    
+    <div class="test-controls">
+        <button onclick="stopTest()" class="btn btn-danger">
+            <i class="fas fa-stop"></i> Stop Analysis
+        </button>
+        <button onclick="completeTest()" id="complete-btn" class="btn btn-success" style="display: none;">
+            <i class="fas fa-check"></i> Complete & Get Report
+        </button>
+    </div>
+</div>
+
+<!-- Test Guide Modal -->
+<div id="guide-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-graduation-cap"></i> Health Analysis Guide</h3>
+            <button onclick="closeGuide()" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <h4>What We Analyze:</h4>
+            <ul>
+                <li><strong>Blink Rate:</strong> Normal: 15-20/min. Low: Dry eyes. High: Stress</li>
+                <li><strong>Facial Symmetry:</strong> Asymmetry may indicate neurological issues</li>
+                <li><strong>Micro-expressions:</strong> Brief facial movements revealing emotions</li>
+                <li><strong>Eye Aspect Ratio:</strong> Measures eye openness for blink detection</li>
+            </ul>
+            
+            <h4>Potential Detections:</h4>
+            <div class="guide-grid">
+                <div class="guide-item">
+                    <i class="fas fa-eye" style="color: #4a6fa5;"></i>
+                    <strong>Dry Eye Syndrome</strong>
+                    <small>Blink rate &lt; 8/min</small>
+                </div>
+                <div class="guide-item">
+                    <i class="fas fa-brain" style="color: #ff6b6b;"></i>
+                    <strong>Stress/Anxiety</strong>
+                    <small>Blink rate &gt; 25/min</small>
+                </div>
+                <div class="guide-item">
+                    <i class="fas fa-user-injured" style="color: #ffd166;"></i>
+                    <strong>Neurological Issues</strong>
+                    <small>Facial asymmetry &gt; 5%</small>
+                </div>
+                <div class="guide-item">
+                    <i class="fas fa-sad-tear" style="color: #3b82f6;"></i>
+                    <strong>Depression</strong>
+                    <small>Sad expressions &gt; 40%</small>
+                </div>
+            </div>
+            
+            <div class="alert alert-info" style="margin-top: 1rem;">
+                <i class="fas fa-info-circle"></i>
+                <strong>Disclaimer:</strong> This is a screening tool, not a medical diagnosis. 
+                Always consult healthcare professionals for medical concerns.
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/test_enhanced.css') }}">
+<script src="{{ url_for('static', filename='js/faceDetection_enhanced.js') }}"></script>
+<script>
+// Initialize variables
+let sessionId = "{{ session_id }}";
+
+// Toggle guide modal
+document.getElementById('toggle-guide').addEventListener('click', function() {
+    document.getElementById('guide-modal').style.display = 'block';
+});
+
+function closeGuide() {
+    document.getElementById('guide-modal').style.display = 'none';
+}
+
+// Complete test function
+async function completeTest() {
+    try {
+        const response = await fetch('/complete_test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                test_duration: 60
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.href = `/results/${data.result_id}`;
+        } else {
+            alert('Error completing test: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error completing test. Please try again.');
+    }
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('guide-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+</script>
+
+<style>
+.conditions-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.condition-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 12px;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.modal-header {
+    padding: 1.5rem;
+    background: var(--primary-600);
+    color: white;
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: white;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.guide-item {
+    text-align: center;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.guide-item i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.expression-bar {
+    display: grid;
+    grid-template-columns: 80px 1fr 50px;
+    gap: 1rem;
+    align-items: center;
+    margin: 0.5rem 0;
+}
+
+#expression-meter {
+    margin-top: 1rem;
+}
+
+.indicators-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .conditions-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .guide-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+}
+</style>
+{% endblock %}
